@@ -1,0 +1,9 @@
+# Directories
+**/.ipynb_checkpoints/
+**/data/
+**/__pycache__/
+
+# Other files
+*.class
+.DS_Store
+
