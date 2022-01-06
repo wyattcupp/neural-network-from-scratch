@@ -4,19 +4,20 @@ wyattcupp@gmail.com
 '''
 import numpy as np
 from sklearn.metrics import accuracy_score
-
 import math
 
 from loss import *
 from activations import *
+from util import batch_iterator
 
 class MultiLayerPerceptron:
     '''
     Represents an MLP model.
     '''
-    def __init__(self, layers, loss=MSE(), verbose=False):
+    def __init__(self, layers, loss=MSE(), batch_size=32, verbose=False):
         self.layers = self._verify_layers(layers)
         self.loss = loss
+        self.batch_size = batch_size
         self.verbose = verbose
 
         self._init_params()
@@ -36,8 +37,7 @@ class MultiLayerPerceptron:
         '''
         # verify first input layer:
         if self.layers[0].input_shape is None:
-            print('First Layer object must contain input_shape parameter.')
-            exit(1)
+            raise ValueError('First Layer object must contain input_shape parameter.')
         
         # set input weights and bias:
         self.layers[0].init_parameters()
@@ -71,24 +71,31 @@ class MultiLayerPerceptron:
             print('Beginning training ...')
             for i in range(len(self.layers)):
                 print('Layer {} weights shape: {}'.format(i, self.layers[i].W.shape))
-            print('Learning Rate: {}, epochs: {}'.format(lr, epochs))
-            print('---------------------------------------\n')
+            print('Learning Rate: {}, batch size: {}, epochs: {}'.format(lr, self.batch_size, epochs))
+            print('---------------------------------------------------\n')
 
         cost_iter = []
         for i in range(epochs):
-            # forward propagation (run through neural net)
-            y_hat = self._forward_propagation(X)
+            # iterate over batches and train:
+            batch_cost = []
+            for X_batch, y_batch in batch_iterator(X,y,batch_size=self.batch_size):
+                # forward propagation: run through a forward pass for given batch
+                y_hat = self._forward_propagation(X_batch)
 
-            # calculate total cost for current iteration
-            cost = np.mean(self.loss.loss(y_hat, y))
-            cost_iter.append(cost)
-            # perform back propagation and update weights
-            self._gradient_descent(X, y, y_hat, lr)
+                # calculate the cost for current batch in current epoch iteration
+                cost = np.mean(self.loss.loss(y_hat, y_batch))
+                batch_cost.append(cost)
+
+                # perform back propagation and update weights
+                self._gradient_descent(X_batch, y_batch, y_hat, lr)
+            
+            # append total mean cost of batches
+            cost_iter.append(np.mean(batch_cost))
             
             if self.verbose and i%100 == 0:
                 print('Cost after epoch #{}: {}'.format(i,cost))
         return cost_iter
-            
+ 
     def _forward_propagation(self, X):
         '''
         Propagate through layers and return pred value y_hat.
@@ -138,7 +145,7 @@ class MultiLayerPerceptron:
 
         return accuracy_score(y,preds)
 
-    def info(self):
+    def info(self, name=None):
         '''
         Returns a summary about the network.
         '''
