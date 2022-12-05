@@ -2,8 +2,12 @@
 **/.ipynb_checkpoints/
 **/data/
 **/__pycache__/
+**/.venv/
 
-# Other files
+# Misc
+*.egg-info
 *.class
-.DS_Store
+*.env
+*.csv
+*.DS_Store
 
