@@ -1,11 +1,11 @@
 '''
 Wyatt Cupp
 wyattcupp@gmail.com
-wyattcupp@u.boisestate.edu
 
 This file defines various activation functions to be used in a neural netowrk.
 '''
 import numpy as np
+
 
 class ActivationFunction:
     '''
@@ -14,6 +14,7 @@ class ActivationFunction:
 
     See <https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6>
     '''
+
     def activate(self, Z, gradient=False):
         raise NotImplementedError()
 
@@ -22,6 +23,7 @@ class ActivationFunction:
         To be implemented only by functions used in an output layer.
         '''
         raise NotImplementedError()
+
 
 class Sigmoid(ActivationFunction):
     '''
@@ -37,14 +39,15 @@ class Sigmoid(ActivationFunction):
             Z = self.activate(Z, gradient=False)
             return Z * (1 - Z)
         return 1/(1 + np.exp(-Z))
-    
+
     def predict(self, y_hat):
         '''
         Generates binary classification preds for given y_hat (sigmoid output)
         '''
         preds = 1. * (y_hat > 0.5)
 
-        return preds        
+        return preds
+
 
 class Relu(ActivationFunction):
     '''
@@ -56,9 +59,10 @@ class Relu(ActivationFunction):
         Relu activation function.
         '''
         if gradient:
-            return np.where(Z>=0, 1, 0)
-    
-        return np.where(Z>=0,Z,0)
+            return np.where(Z >= 0, 1, 0)
+
+        return np.where(Z >= 0, Z, 0)
+
 
 class LeakyRelu(ActivationFunction):
     '''
@@ -66,6 +70,7 @@ class LeakyRelu(ActivationFunction):
 
     See <https://keras.io/api/layers/activation_layers/leaky_relu/>
     '''
+
     def __init__(self, alpha=0.3):
         self.alpha = alpha
 
@@ -74,9 +79,10 @@ class LeakyRelu(ActivationFunction):
         Leaky ReLU activation function.
         '''
         if gradient:
-            return np.where(Z>=0, 1, self.alpha)
-    
-        return np.where(Z>=0,Z, self.alpha*Z)
+            return np.where(Z >= 0, 1, self.alpha)
+
+        return np.where(Z >= 0, Z, self.alpha*Z)
+
 
 class TanH(ActivationFunction):
     '''
@@ -89,9 +95,10 @@ class TanH(ActivationFunction):
         '''
         if gradient:
             Z = self.activate(Z, gradient=False)
-            return 1-np.power(Z,2)
+            return 1-np.power(Z, 2)
 
         return 2 / (1+np.exp(-2*Z))-1
+
 
 class SoftMax(ActivationFunction):
     '''
@@ -108,10 +115,9 @@ class SoftMax(ActivationFunction):
 
         e_Z = np.exp(Z-np.max(Z, axis=-1, keepdims=True))
         return e_Z / np.sum(e_Z, axis=-1, keepdims=True)
-    
+
     def predict(self, y_hat):
         '''
         Makes a prediction by returning index of most probable feature.
         '''
         return np.argmax(y_hat, axis=1)
-
